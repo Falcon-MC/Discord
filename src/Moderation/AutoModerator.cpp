@@ -192,6 +192,9 @@ dpp::task<void> AutoModerator::_warn(dpp::snowflake channelId, dpp::snowflake us
 }
 
 void AutoModerator::_log(const dpp::message &message, const std::string &reason) {
+    mBot.log(dpp::ll_info, "Moderation: " + reason + " by " + message.author.username + " in channel " +
+                           message.channel_id.str());
+
     if (mConfig.mModLogChannelId.empty())
         return;
 

@@ -27,6 +27,8 @@ add_executable(FalconDiscord
     src/Config.cpp
     src/Commands/ContributorCommand.cpp
     src/Commands/EmbedCommand.cpp
+    src/Diagnostics/ConsoleLogger.cpp
+    src/Diagnostics/GuildDiagnostics.cpp
     src/GitHub/GitHubClient.cpp
     src/Moderation/AutoModerator.cpp
 )
