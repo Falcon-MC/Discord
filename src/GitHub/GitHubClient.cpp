@@ -1,9 +1,15 @@
 #include "GitHub/GitHubClient.h"
 
+#include <map>
 #include <utility>
 
 namespace {
     const std::string USER_AGENT = "Falcon-Discord";
+    const std::string DEVICE_CODE_URL = "https://github.com/login/device/code";
+    const std::string ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+    const std::string USER_URL = "https://api.github.com/user";
+    const std::string SEARCH_ISSUES = "issues";
+    const std::string SEARCH_COMMITS = "commits";
 
     std::optional<dpp::json> parseBody(const dpp::http_request_completion_t &response) {
         if (response.error != dpp::h_success || response.status == 0)
@@ -42,8 +48,10 @@ const std::string &GitHubClient::getOrganization() const {
 }
 
 dpp::task<std::optional<DeviceCode>> GitHubClient::requestDeviceCode() {
-    const std::optional<dpp::json> body = co_await _post("https://github.com/login/device/code",
-                                                         dpp::json{{"client_id", mClientId}});
+    dpp::json request = dpp::json::object();
+    request["client_id"] = mClientId;
+
+    const std::optional<dpp::json> body = co_await _post(DEVICE_CODE_URL, request);
     if (!body.has_value())
         co_return std::nullopt;
 
@@ -60,11 +68,12 @@ dpp::task<std::optional<DeviceCode>> GitHubClient::requestDeviceCode() {
 }
 
 dpp::task<TokenPoll> GitHubClient::pollAccessToken(std::string deviceCode) {
-    const std::optional<dpp::json> body = co_await _post("https://github.com/login/oauth/access_token", dpp::json{
-        {"client_id", mClientId},
-        {"device_code", deviceCode},
-        {"grant_type", "urn:ietf:params:oauth:grant-type:device_code"}
-    });
+    dpp::json request = dpp::json::object();
+    request["client_id"] = mClientId;
+    request["device_code"] = deviceCode;
+    request["grant_type"] = "urn:ietf:params:oauth:grant-type:device_code";
+
+    const std::optional<dpp::json> body = co_await _post(ACCESS_TOKEN_URL, request);
 
     TokenPoll poll;
     if (!body.has_value())
@@ -91,7 +100,7 @@ dpp::task<TokenPoll> GitHubClient::pollAccessToken(std::string deviceCode) {
 }
 
 dpp::task<std::optional<std::string>> GitHubClient::fetchLogin(std::string accessToken) {
-    const std::optional<dpp::json> body = co_await _get("https://api.github.com/user", accessToken);
+    const std::optional<dpp::json> body = co_await _get(USER_URL, accessToken);
     if (!body.has_value())
         co_return std::nullopt;
 
@@ -104,12 +113,13 @@ dpp::task<std::optional<std::string>> GitHubClient::fetchLogin(std::string acces
 
 dpp::task<Contribution> GitHubClient::findContribution(std::string login, std::string accessToken) {
     const std::string scope = "org:" + mOrganization + " author:" + login + " is:public";
+    const std::string pullRequestQuery = "is:pr is:merged " + scope;
 
-    const std::optional<uint64_t> pullRequests = co_await _count("issues", "is:pr is:merged " + scope, accessToken);
+    const std::optional<uint64_t> pullRequests = co_await _count(SEARCH_ISSUES, pullRequestQuery, accessToken);
     if (pullRequests.has_value() && *pullRequests > 0)
         co_return Contribution::Found;
 
-    const std::optional<uint64_t> commits = co_await _count("commits", scope, accessToken);
+    const std::optional<uint64_t> commits = co_await _count(SEARCH_COMMITS, scope, accessToken);
     if (commits.has_value() && *commits > 0)
         co_return Contribution::Found;
 
@@ -120,11 +130,14 @@ dpp::task<Contribution> GitHubClient::findContribution(std::string login, std::s
 }
 
 dpp::task<std::optional<dpp::json>> GitHubClient::_post(std::string url, dpp::json body) {
-    const dpp::http_request_completion_t response = co_await mBot.co_request(url, dpp::m_post, body.dump(),
-                                                                             "application/json", {
-        {"Accept", "application/json"},
-        {"User-Agent", USER_AGENT}
-    });
+    std::multimap<std::string, std::string> headers;
+    headers.emplace("Accept", "application/json");
+    headers.emplace("User-Agent", USER_AGENT);
+
+    const std::string payload = body.dump();
+    const std::string mimeType = "application/json";
+    const dpp::http_request_completion_t response = co_await mBot.co_request(url, dpp::m_post, payload, mimeType,
+                                                                             headers);
     if (response.status != 200)
         co_return std::nullopt;
 
@@ -132,12 +145,15 @@ dpp::task<std::optional<dpp::json>> GitHubClient::_post(std::string url, dpp::js
 }
 
 dpp::task<std::optional<dpp::json>> GitHubClient::_get(std::string url, std::string accessToken) {
-    const dpp::http_request_completion_t response = co_await mBot.co_request(url, dpp::m_get, "", "", {
-        {"Accept", "application/vnd.github+json"},
-        {"Authorization", "Bearer " + accessToken},
-        {"User-Agent", USER_AGENT},
-        {"X-GitHub-Api-Version", "2022-11-28"}
-    });
+    std::multimap<std::string, std::string> headers;
+    headers.emplace("Accept", "application/vnd.github+json");
+    headers.emplace("Authorization", "Bearer " + accessToken);
+    headers.emplace("User-Agent", USER_AGENT);
+    headers.emplace("X-GitHub-Api-Version", "2022-11-28");
+
+    const std::string empty;
+    const dpp::http_request_completion_t response = co_await mBot.co_request(url, dpp::m_get, empty, empty,
+                                                                             headers);
     if (response.status != 200)
         co_return std::nullopt;
 
