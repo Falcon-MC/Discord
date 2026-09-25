@@ -22,16 +22,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(dpp)
 
-add_executable(FalconDiscord
-    src/main.cpp
-    src/Config.cpp
-    src/Commands/ContributorCommand.cpp
-    src/Commands/EmbedCommand.cpp
-    src/Diagnostics/ConsoleLogger.cpp
-    src/Diagnostics/GuildDiagnostics.cpp
-    src/GitHub/GitHubClient.cpp
-    src/Moderation/AutoModerator.cpp
-)
+file(GLOB_RECURSE FALCON_DISCORD_SOURCES CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE FALCON_DISCORD_HEADERS CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+
+add_executable(FalconDiscord ${FALCON_DISCORD_SOURCES} ${FALCON_DISCORD_HEADERS})
 target_include_directories(FalconDiscord PRIVATE include)
 find_package(Threads REQUIRED)
 target_link_libraries(FalconDiscord PRIVATE dpp Threads::Threads ${CMAKE_DL_LIBS})
