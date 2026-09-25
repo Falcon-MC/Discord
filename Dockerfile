@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 FROM ubuntu:24.04 AS build
 
 RUN apt-get update \
@@ -9,7 +11,8 @@ WORKDIR /src
 COPY CMakeLists.txt .
 COPY include include
 COPY src src
-RUN cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+RUN --mount=type=cache,target=/src/build \
+    cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
     && cmake --build build \
     && mkdir /out \
     && cp build/FalconDiscord /out/ \
