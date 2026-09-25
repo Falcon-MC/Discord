@@ -28,6 +28,7 @@ add_executable(FalconDiscord
     src/Commands/ContributorCommand.cpp
     src/Commands/EmbedCommand.cpp
     src/GitHub/GitHubClient.cpp
+    src/Moderation/AutoModerator.cpp
 )
 target_include_directories(FalconDiscord PRIVATE include)
 find_package(Threads REQUIRED)

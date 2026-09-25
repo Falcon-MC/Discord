@@ -11,6 +11,7 @@ struct Config {
     std::string mGitHubOrganization;
     dpp::snowflake mGuildId;
     dpp::snowflake mContributorRoleId;
+    dpp::snowflake mModLogChannelId;
 
     static std::optional<Config> fromEnvironment();
 };

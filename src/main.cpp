@@ -2,6 +2,7 @@
 #include "Commands/EmbedCommand.h"
 #include "Config.h"
 #include "GitHub/GitHubClient.h"
+#include "Moderation/AutoModerator.h"
 
 #include <dpp/dpp.h>
 
@@ -14,12 +15,21 @@ int main() {
     if (!config.has_value())
         return 1;
 
-    dpp::cluster bot(config->mDiscordToken, dpp::i_guilds);
+    dpp::cluster bot(config->mDiscordToken, dpp::i_guilds | dpp::i_guild_messages | dpp::i_message_content);
     bot.on_log(dpp::utility::cout_logger());
 
     GitHubClient gitHub(bot, config->mGitHubClientId, config->mGitHubOrganization);
     ContributorCommand contributor(bot, gitHub, *config);
     EmbedCommand embed(bot);
+    AutoModerator moderator(bot, *config);
+
+    bot.on_message_create([&moderator](const dpp::message_create_t &event) -> dpp::task<void> {
+        co_await moderator.onMessageCreate(event);
+    });
+
+    bot.on_message_update([&moderator](const dpp::message_update_t &event) -> dpp::task<void> {
+        co_await moderator.onMessageUpdate(event);
+    });
 
     bot.on_slashcommand([&contributor, &embed](const dpp::slashcommand_t &event) -> dpp::task<void> {
         const std::string name = event.command.get_command_name();

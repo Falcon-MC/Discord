@@ -26,12 +26,21 @@ The bot running on the [Falcon](https://github.com/Falcon-MC/Falcon) Discord ser
   reads their public profile. Members who already have the role cannot run it.
 - **`/embed`** - administrators only. Sends an embed with a title, a description (`\n` for a new line) and an
   optional hex color in the current channel.
+- **Anti-spam** - a member who sends 6 messages in 6 seconds, the same message 3 times in 30 seconds or a
+  message with 5 mentions or more has those messages deleted and is timed out for 10 minutes.
+- **Anti-invite** - invites to other Discord servers are deleted, including in edited messages. Invites to this
+  server are allowed.
+
+Members who can manage messages are never moderated. Actions are logged in the moderation log channel when one
+is set.
 
 ## Setup
 
-1. Create an application in the [Discord Developer Portal](https://discord.com/developers/applications), copy
-   the bot token and invite the bot with the `bot` and `applications.commands` scopes and the **Manage Roles**,
-   **Send Messages** and **Embed Links** permissions. Its role must be above the Contributor role.
+1. Create an application in the [Discord Developer Portal](https://discord.com/developers/applications), enable
+   the **Message Content** intent, copy the bot token and invite the bot with the `bot` and
+   `applications.commands` scopes and the **Manage Roles**, **Manage Messages**, **Moderate Members**,
+   **Send Messages** and **Embed Links** permissions. Its role must be above the Contributor role and the roles
+   of the members it moderates.
 2. Create an OAuth app in the organization settings on GitHub (**Developer settings** → **OAuth Apps**), tick
    **Enable Device Flow** and copy its client ID. The callback URL is not used, any URL works.
 3. Set the environment variables, listed in [`.env.example`](.env.example):
@@ -41,6 +50,7 @@ The bot running on the [Falcon](https://github.com/Falcon-MC/Falcon) Discord ser
 | `DISCORD_TOKEN` | Bot token |
 | `DISCORD_GUILD_ID` | ID of the server the commands are registered in |
 | `DISCORD_CONTRIBUTOR_ROLE_ID` | ID of the Contributor role |
+| `DISCORD_MOD_LOG_CHANNEL_ID` | Optional, ID of the channel moderation actions are logged in |
 | `GITHUB_CLIENT_ID` | Client ID of the GitHub OAuth app |
 | `GITHUB_ORGANIZATION` | Organization whose repositories count, `Falcon-MC` by default |
 

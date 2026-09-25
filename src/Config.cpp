@@ -53,6 +53,10 @@ std::optional<Config> Config::fromEnvironment() {
         valid = false;
     }
 
+    const std::optional<dpp::snowflake> modLogChannelId = readSnowflake("DISCORD_MOD_LOG_CHANNEL_ID");
+    if (modLogChannelId.has_value())
+        config.mModLogChannelId = *modLogChannelId;
+
     if (!valid)
         return std::nullopt;
 
