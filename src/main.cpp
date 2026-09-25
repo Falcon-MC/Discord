@@ -23,8 +23,11 @@ int main() {
     });
 
     bot.on_ready([&bot, &contributor, &config](const dpp::ready_t &) {
-        if (dpp::run_once<struct RegisterCommands>())
-            bot.guild_bulk_command_create({contributor.getDefinition()}, config->mGuildId);
+        if (!dpp::run_once<struct RegisterCommands>())
+            return;
+
+        bot.guild_bulk_command_create({contributor.getDefinition()}, config->mGuildId);
+        bot.log(dpp::ll_info, "Ready as " + bot.me.username);
     });
 
     bot.start(dpp::st_wait);
