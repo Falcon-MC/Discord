@@ -29,7 +29,8 @@ add_executable(FalconDiscord
     src/GitHub/GitHubClient.cpp
 )
 target_include_directories(FalconDiscord PRIVATE include)
-target_link_libraries(FalconDiscord PRIVATE dpp)
+find_package(Threads REQUIRED)
+target_link_libraries(FalconDiscord PRIVATE dpp Threads::Threads ${CMAKE_DL_LIBS})
 
 if(WIN32)
     file(GLOB DPP_RUNTIME_DLLS ${dpp_SOURCE_DIR}/win32/bin/*.dll)
