@@ -28,7 +28,7 @@ add_executable(FalconDiscord
     src/Commands/ContributorCommand.cpp
     src/GitHub/GitHubClient.cpp
 )
-target_include_directories(FalconDiscord PRIVATE src)
+target_include_directories(FalconDiscord PRIVATE include)
 target_link_libraries(FalconDiscord PRIVATE dpp)
 
 if(WIN32)

@@ -7,6 +7,7 @@ RUN apt-get update \
 
 WORKDIR /src
 COPY CMakeLists.txt .
+COPY include include
 COPY src src
 RUN cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
     && cmake --build build \
