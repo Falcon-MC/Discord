@@ -39,6 +39,10 @@ ContributorCommand::ContributorCommand(dpp::cluster &bot, GitHubClient &gitHub, 
     : mBot(bot), mGitHub(gitHub), mConfig(config) {
 }
 
+std::string ContributorCommand::getName() const {
+    return "contributor";
+}
+
 dpp::slashcommand ContributorCommand::getDefinition() const {
     return dpp::slashcommand("contributor", "Get the Contributor role by linking your GitHub account", mBot.me.id);
 }

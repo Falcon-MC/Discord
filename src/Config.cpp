@@ -26,6 +26,7 @@ std::optional<Config> Config::fromEnvironment() {
     config.mDiscordToken = readVariable("DISCORD_TOKEN");
     config.mGitHubClientId = readVariable("GITHUB_CLIENT_ID");
     config.mGitHubOrganization = readVariable("GITHUB_ORGANIZATION", "Falcon-MC");
+    config.mDataDirectory = readVariable("DATA_DIRECTORY", "data");
 
     bool valid = true;
     if (config.mDiscordToken.empty()) {

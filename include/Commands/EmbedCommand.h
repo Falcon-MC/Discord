@@ -1,17 +1,20 @@
 #pragma once
 
+#include "Commands/SlashCommand.h"
+
 #include <dpp/dpp.h>
 
 #include <cstdint>
 #include <optional>
 #include <string>
 
-class EmbedCommand {
+class EmbedCommand : public SlashCommand {
 public:
     explicit EmbedCommand(dpp::cluster &bot);
 
-    dpp::slashcommand getDefinition() const;
-    dpp::task<void> execute(dpp::slashcommand_t event);
+    std::string getName() const override;
+    dpp::slashcommand getDefinition() const override;
+    dpp::task<void> execute(dpp::slashcommand_t event) override;
 
 private:
     dpp::cluster &mBot;

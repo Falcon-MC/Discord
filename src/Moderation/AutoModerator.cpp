@@ -14,7 +14,6 @@ namespace {
     constexpr size_t MENTION_LIMIT = 5;
     constexpr time_t TIMEOUT_SECONDS = 10 * 60;
     constexpr uint64_t WARNING_LIFETIME = 8;
-    constexpr uint32_t COLOR_MODERATION = 0xEF4444;
 
     const std::regex INVITE_PATTERN(R"((?:discord\.gg|discord(?:app)?\.com/invite)/([A-Za-z0-9-]+))",
                                     std::regex::icase);
@@ -47,8 +46,8 @@ namespace {
     }
 }
 
-AutoModerator::AutoModerator(dpp::cluster &bot, const Config &config)
-    : mBot(bot), mConfig(config) {
+AutoModerator::AutoModerator(dpp::cluster &bot, const Config &config, ModerationStore &store, ModerationLog &log)
+    : mBot(bot), mConfig(config), mStore(store), mLog(log) {
 }
 
 dpp::task<void> AutoModerator::onMessageCreate(dpp::message_create_t event) {
@@ -97,7 +96,8 @@ dpp::task<bool> AutoModerator::_handleInvites(const dpp::message &message) {
             continue;
 
         co_await mBot.co_message_delete(message.id, message.channel_id);
-        _log(message, "Invite to another Discord server");
+        mLog.recordEvent("Invite to another Discord server deleted", message.author.id, message.author.username,
+                         message.channel_id, message.content);
 
         const std::string text = "Invites to other Discord servers are not allowed here.";
         co_await _warn(message.channel_id, message.author.id, text);
@@ -170,9 +170,18 @@ dpp::task<void> AutoModerator::_punishSpam(const dpp::message &message, std::vec
     if (result.is_error()) {
         mBot.log(dpp::ll_error, "Could not time out " + message.author.username + ": " +
                                 result.get_error().human_readable);
+    } else {
+        ModerationCase moderationCase;
+        moderationCase.mType = CaseType::Mute;
+        moderationCase.mUserId = message.author.id;
+        moderationCase.mModeratorId = mBot.me.id;
+        moderationCase.mReason = "Automatic: " + reason;
+        moderationCase.mCreatedAt = static_cast<int64_t>(until) - TIMEOUT_SECONDS;
+        moderationCase.mExpiresAt = static_cast<int64_t>(until);
+        mStore.closeActive(message.author.id, CaseType::Mute);
+        moderationCase.mId = mStore.addCase(moderationCase);
+        mLog.recordCase(moderationCase, message.author.username);
     }
-
-    _log(message, reason + ", timed out for 10 minutes");
 
     const std::string text = "Slow down. You are timed out for 10 minutes for spamming.";
     co_await _warn(message.channel_id, message.author.id, text);
@@ -189,29 +198,4 @@ dpp::task<void> AutoModerator::_warn(dpp::snowflake channelId, dpp::snowflake us
     const dpp::message posted = sent.get<dpp::message>();
     co_await mBot.co_sleep(WARNING_LIFETIME);
     co_await mBot.co_message_delete(posted.id, posted.channel_id);
-}
-
-void AutoModerator::_log(const dpp::message &message, const std::string &reason) {
-    mBot.log(dpp::ll_info, "Moderation: " + reason + " by " + message.author.username + " in channel " +
-                           message.channel_id.str());
-
-    if (mConfig.mModLogChannelId.empty())
-        return;
-
-    std::string content = message.content;
-    if (content.size() > 1000)
-        content = content.substr(0, 1000) + "...";
-    if (content.empty())
-        content = "*no text*";
-
-    dpp::embed embed;
-    embed.set_color(COLOR_MODERATION);
-    embed.set_title(reason);
-    embed.add_field("Member", "<@" + std::to_string(static_cast<uint64_t>(message.author.id)) + "> (" +
-                                  message.author.username + ")", true);
-    embed.add_field("Channel", "<#" + std::to_string(static_cast<uint64_t>(message.channel_id)) + ">", true);
-    embed.add_field("Message", content, false);
-    embed.set_timestamp(std::time(nullptr));
-
-    mBot.message_create(dpp::message(mConfig.mModLogChannelId, embed));
 }

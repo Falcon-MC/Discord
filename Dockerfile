@@ -27,6 +27,8 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY --from=build /out .
+RUN mkdir -p /app/data && chown falcon /app/data
 ENV LD_LIBRARY_PATH=/app
+VOLUME /app/data
 USER falcon
 ENTRYPOINT ["./FalconDiscord"]

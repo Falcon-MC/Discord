@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Commands/SlashCommand.h"
 #include "Config.h"
 #include "GitHub/GitHubClient.h"
 
@@ -9,12 +10,13 @@
 #include <string>
 #include <unordered_set>
 
-class ContributorCommand {
+class ContributorCommand : public SlashCommand {
 public:
     ContributorCommand(dpp::cluster &bot, GitHubClient &gitHub, const Config &config);
 
-    dpp::slashcommand getDefinition() const;
-    dpp::task<void> execute(dpp::slashcommand_t event);
+    std::string getName() const override;
+    dpp::slashcommand getDefinition() const override;
+    dpp::task<void> execute(dpp::slashcommand_t event) override;
 
 private:
     class PendingGuard {

@@ -20,6 +20,10 @@ EmbedCommand::EmbedCommand(dpp::cluster &bot)
     : mBot(bot) {
 }
 
+std::string EmbedCommand::getName() const {
+    return "embed";
+}
+
 dpp::slashcommand EmbedCommand::getDefinition() const {
     dpp::slashcommand command("embed", "Send an embed in this channel", mBot.me.id);
     command.set_default_permissions(dpp::p_administrator);

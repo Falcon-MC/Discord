@@ -12,7 +12,10 @@ namespace {
         {dpp::p_embed_links, "Embed Links"},
         {dpp::p_manage_roles, "Manage Roles"},
         {dpp::p_manage_messages, "Manage Messages"},
-        {dpp::p_moderate_members, "Moderate Members"}
+        {dpp::p_read_message_history, "Read Message History"},
+        {dpp::p_moderate_members, "Moderate Members"},
+        {dpp::p_kick_members, "Kick Members"},
+        {dpp::p_ban_members, "Ban Members"}
     };
 }
 
@@ -28,6 +31,7 @@ void GuildDiagnostics::logConfiguration() const {
                            (mConfig.mModLogChannelId.empty() ? std::string("disabled") :
                                                                mConfig.mModLogChannelId.str()));
     mBot.log(dpp::ll_info, "  GitHub organization: " + mConfig.mGitHubOrganization);
+    mBot.log(dpp::ll_info, "  Data directory: " + mConfig.mDataDirectory);
     mBot.log(dpp::ll_info, "  Intents: guilds, guild messages, message content");
 }
 
