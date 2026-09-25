@@ -24,12 +24,14 @@ The bot running on the [Falcon](https://github.com/Falcon-MC/Falcon) Discord ser
 - **`/contributor`** - gives the Contributor role to anyone with a merged pull request or a commit in a public
   repository of the organization. The member links their GitHub account with a one time code, and the bot only
   reads their public profile. Members who already have the role cannot run it.
+- **`/embed`** - administrators only. Sends an embed with a title, a description (`\n` for a new line) and an
+  optional hex color in the current channel.
 
 ## Setup
 
 1. Create an application in the [Discord Developer Portal](https://discord.com/developers/applications), copy
-   the bot token and invite the bot with the `bot` and `applications.commands` scopes and the **Manage Roles**
-   permission. Its role must be above the Contributor role.
+   the bot token and invite the bot with the `bot` and `applications.commands` scopes and the **Manage Roles**,
+   **Send Messages** and **Embed Links** permissions. Its role must be above the Contributor role.
 2. Create an OAuth app in the organization settings on GitHub (**Developer settings** → **OAuth Apps**), tick
    **Enable Device Flow** and copy its client ID. The callback URL is not used, any URL works.
 3. Set the environment variables, listed in [`.env.example`](.env.example):

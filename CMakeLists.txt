@@ -26,6 +26,7 @@ add_executable(FalconDiscord
     src/main.cpp
     src/Config.cpp
     src/Commands/ContributorCommand.cpp
+    src/Commands/EmbedCommand.cpp
     src/GitHub/GitHubClient.cpp
 )
 target_include_directories(FalconDiscord PRIVATE include)
