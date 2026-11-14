@@ -28,7 +28,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libssl-dev zlib1g-dev ninja-build
 
       - name: Cache build
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: build
           key: build-${{ matrix.name }}-${{ hashFiles('CMakeLists.txt') }}-${{ github.sha }}
