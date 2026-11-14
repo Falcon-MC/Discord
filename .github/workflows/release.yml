@@ -28,7 +28,7 @@ jobs:
       changelog: ${{ steps.changelog.outputs.changelog }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -90,7 +90,7 @@ jobs:
           apt-get install -y --no-install-recommends build-essential cmake git ninja-build ca-certificates \
             libssl-dev zlib1g-dev
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Cache build
         uses: actions/cache@v4
